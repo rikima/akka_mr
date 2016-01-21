@@ -1,7 +1,6 @@
 package com.rikima.mr.akka
 
-import akka.actor.Actor.Receive
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Props, Actor, ActorLogging}
 import akka.cluster.ClusterEvent.{MemberEvent, MemberRemoved, UnreachableMember, MemberUp}
 
 /**
@@ -10,7 +9,26 @@ import akka.cluster.ClusterEvent.{MemberEvent, MemberRemoved, UnreachableMember,
 case class MapperResponse(data: String)
 case class MapperRequest(data: String)
 
+object Mappers {
+  def props(start_id: Int, num: Int): Props = Props(new Mappers(start_id, num))
+}
+
+class Mappers(start_id: Int, num: Int = 2) extends Actor {
+  (0 until num).foreach {
+    case c =>
+      val id = start_id + c
+      val a = context.actorOf(Props[Mapper], name=s"m$id")
+      println(s"mapper actor: $a")
+  }
+
+  def receive = {
+    case message =>
+      println(message)
+  }
+}
+
 class Mapper extends Actor with ActorLogging {
+
 
   override def preStart = {
     log.debug(Thread.currentThread.getName + " is started.")
